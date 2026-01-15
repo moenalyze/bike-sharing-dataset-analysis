@@ -105,5 +105,3 @@ sns.barplot(
 ax_temp.set_xlabel("Kategori Suhu")
 ax_temp.set_ylabel("Rata-rata Sewa Per Jam")
 st.pyplot(fig_temp)
-
-st.caption("Copyright (c) 2024 - Bike Sharing Dashboard")
