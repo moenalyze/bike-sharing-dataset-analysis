@@ -86,6 +86,7 @@ sns.barplot(
     errorbar=None,
     ax=ax_time
 )
+ax_time.set_title("Distribusi Penyewaan Berdasarkan Waktu", fontsize=14)
 ax_time.set_xlabel(None)
 ax_time.set_ylabel(None)
 st.pyplot(fig_time)
@@ -102,6 +103,7 @@ sns.barplot(
     errorbar=None,
     ax=ax_temp
 )
-ax_temp.set_xlabel("Kategori Suhu")
-ax_temp.set_ylabel("Rata-rata Sewa Per Jam")
+ax_temp.set_title("Distribusi Penyewaan Berdasarkan Kategori Suhu", fontsize=14)
+ax_temp.set_xlabel(None)
+ax_temp.set_ylabel(None)
 st.pyplot(fig_temp)
