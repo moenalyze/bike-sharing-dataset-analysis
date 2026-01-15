@@ -17,7 +17,10 @@ def load_data():
 all_df = load_data()
 
 with st.sidebar:
-    st.image("bicycle.png", width=100)
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "bicycle.png")
+    
+    st.image(file_path, width=100)
     st.title("Filter Data")
     
     min_date = all_df["dteday"].min()
