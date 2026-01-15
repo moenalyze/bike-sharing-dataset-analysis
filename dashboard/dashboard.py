@@ -54,56 +54,101 @@ with col3:
 
 st.markdown("---")
 
-st.subheader("1. Pengaruh Musim & Cuaca")
+st.subheader("Pengaruh Musim & Cuaca")
+
+daily_df = main_df.groupby('dteday').agg({
+    'season': 'max',
+    'weather_cond': 'max',
+    'is_workingday': 'max',
+    'casual': 'sum',
+    'registered': 'sum',
+    'total_count': 'sum'
+}).reset_index()
 
 col_viz1, col_viz2 = st.columns(2)
 
 with col_viz1:
     fig1, ax1 = plt.subplots(figsize=(10, 6))
-    sns.barplot(x="season", y="total_count", data=main_df, palette="Blues_d", errorbar=None, ax=ax1)
-    ax1.set_title("Rata-rata Harian per Musim")
+    sns.barplot(x="season", y="total_count", data=daily_df, palette="Blues_d", errorbar=None, ax=ax1)
+    ax1.set_title("Rata-rata Sewa Harian per Musim")
     ax1.set_xlabel(None)
     ax1.set_ylabel(None)
     st.pyplot(fig1)
 
 with col_viz2:
     fig2, ax2 = plt.subplots(figsize=(10, 6))
-    sns.barplot(x="weather_cond", y="total_count", data=main_df, palette="Reds_d", errorbar=None, ax=ax2)
-    ax2.set_title("Rata-rata Sewa per Kondisi Cuaca (Per Jam)")
+    sns.barplot(x="weather_cond", y="total_count", data=daily_df, palette="Reds_d", errorbar=None, ax=ax2)
+    ax2.set_title("Rata-rata Sewa Harian per Kondisi Cuaca")
     ax2.set_xlabel(None)
     ax2.set_ylabel(None)
     st.pyplot(fig2)
     
-st.subheader("2. Pola Jam Sibuk (Time of Day)")
+st.subheader("Pola penyewaan sepeda di hari kerja dan hari libur")
 
-fig_time, ax_time = plt.subplots(figsize=(10, 5))
+by_workingday = daily_df.groupby(by="is_workingday").agg({
+    "casual": "mean",
+    "registered": "mean"
+}).reset_index()
+
+by_workingday['is_workingday'] = by_workingday['is_workingday'].map({
+    0: 'Holiday/Weekend',
+    1: 'Working Day'
+})
+
+by_workingday_melt = by_workingday.melt(
+    id_vars="is_workingday",
+    var_name="user_type",
+    value_name="avg_count"
+)
+
+fig_work_holiday, ax_work_holiday = plt.subplots(figsize=(10, 5))
 sns.barplot(
-    x="time_of_day", 
-    y="total_count", 
-    data=main_df, 
-    order=['Morning', 'Afternoon', 'Evening'],
+    x="is_workingday", 
+    y="avg_count", 
+    hue="user_type", 
+    data=by_workingday_melt, 
     palette="viridis",
-    errorbar=None,
-    ax=ax_time
+    ax=ax_work_holiday
 )
-ax_time.set_title("Distribusi Penyewaan Berdasarkan Waktu", fontsize=14)
-ax_time.set_xlabel(None)
-ax_time.set_ylabel(None)
-st.pyplot(fig_time)
 
-st.subheader("3. Analisis Kategori Suhu (Binning)")
+ax_work_holiday.set_title("Perbandingan Rata-rata Penyewaan: Casual vs Registered", fontsize=16)
+ax_work_holiday.set_xlabel(None)
+ax_work_holiday.set_ylabel("Rata-rata Penyewaan", fontsize=12)
+ax_work_holiday.legend(title="Tipe Pengguna")
+st.pyplot(fig_work_holiday)
+    
+st.subheader("Analisis Lanjutan (Binning Suhu dan Waktu)")
 
-fig_temp, ax_temp = plt.subplots(figsize=(10, 5))
-sns.barplot(
-    x="temp_category", 
-    y="total_count", 
-    data=main_df,
-    order=['Cold', 'Mild', 'Hot'],
-    palette="coolwarm",
-    errorbar=None,
-    ax=ax_temp
-)
-ax_temp.set_title("Distribusi Penyewaan Berdasarkan Kategori Suhu", fontsize=14)
-ax_temp.set_xlabel(None)
-ax_temp.set_ylabel(None)
-st.pyplot(fig_temp)
+col_temp, col_time = st.columns(2)
+
+with col_temp:
+    fig_temp, ax_temp = plt.subplots(figsize=(10, 5))
+    sns.barplot(
+        x="temp_category", 
+        y="total_count", 
+        data=main_df,
+        order=['Cold', 'Mild', 'Hot'],
+        palette="coolwarm",
+        errorbar=None,
+        ax=ax_temp
+    )
+    ax_temp.set_title("Distribusi Penyewaan Berdasarkan Kategori Suhu", fontsize=14)
+    ax_temp.set_xlabel(None)
+    ax_temp.set_ylabel(None)
+    st.pyplot(fig_temp)
+    
+with col_time:
+    fig_time, ax_time = plt.subplots(figsize=(10, 5))
+    sns.barplot(
+        x="time_of_day", 
+        y="total_count", 
+        data=main_df, 
+        order=['Morning', 'Afternoon', 'Evening'],
+        palette="viridis",
+        errorbar=None,
+        ax=ax_time
+    )
+    ax_time.set_title("Distribusi Penyewaan Berdasarkan Waktu", fontsize=14)
+    ax_time.set_xlabel(None)
+    ax_time.set_ylabel(None)
+    st.pyplot(fig_time)
