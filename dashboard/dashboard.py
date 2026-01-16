@@ -57,70 +57,76 @@ st.markdown("---")
 start_fmt = start_date.strftime('%d %b %Y')
 end_fmt = end_date.strftime('%d %b %Y')
 
-st.subheader("Pengaruh Musim & Cuaca")
-st.caption(f"Analisis Harian {start_fmt} - {end_fmt}")
+tab1, tab2 = st.tabs(["Pengaruh Musim & Cuaca", "Pola Sewa Hari Kerja vs Libur"])
 
-daily_df = main_df.groupby('dteday').agg({
-    'season': 'max',
-    'weather_cond': 'max',
-    'is_workingday': 'max',
-    'casual': 'sum',
-    'registered': 'sum',
-    'total_count': 'sum'
-}).reset_index()
+with tab1:
+    st.subheader("Pengaruh Musim & Cuaca")
+    st.caption(f"Analisis Harian {start_fmt} - {end_fmt}")
 
-col_viz1, col_viz2 = st.columns(2)
+    daily_df = main_df.groupby('dteday').agg({
+        'season': 'max',
+        'weather_cond': 'max',
+        'is_workingday': 'max',
+        'casual': 'sum',
+        'registered': 'sum',
+        'total_count': 'sum'
+    }).reset_index()
 
-with col_viz1:
-    fig1, ax1 = plt.subplots(figsize=(10, 6))
-    sns.barplot(x="season", y="total_count", data=daily_df, palette="Blues_d", errorbar=None, ax=ax1)
-    ax1.set_title("Rata-rata Sewa Harian per Musim")
-    ax1.set_xlabel(None)
-    ax1.set_ylabel(None)
-    st.pyplot(fig1)
+    col_viz1, col_viz2 = st.columns(2)
 
-with col_viz2:
-    fig2, ax2 = plt.subplots(figsize=(10, 6))
-    sns.barplot(x="weather_cond", y="total_count", data=daily_df, palette="Reds_d", errorbar=None, ax=ax2)
-    ax2.set_title("Rata-rata Sewa Harian per Kondisi Cuaca")
-    ax2.set_xlabel(None)
-    ax2.set_ylabel(None)
-    st.pyplot(fig2)
+    with col_viz1:
+        fig1, ax1 = plt.subplots(figsize=(10, 6))
+        sns.barplot(x="season", y="total_count", data=daily_df, palette="Blues_d", errorbar=None, ax=ax1)
+        ax1.set_title("Rata-rata Sewa Harian per Musim")
+        ax1.set_xlabel(None)
+        ax1.set_ylabel(None)
+        st.pyplot(fig1)
+
+    with col_viz2:
+        fig2, ax2 = plt.subplots(figsize=(10, 6))
+        sns.barplot(x="weather_cond", y="total_count", data=daily_df, palette="Reds_d", errorbar=None, ax=ax2)
+        ax2.set_title("Rata-rata Sewa Harian per Kondisi Cuaca")
+        ax2.set_xlabel(None)
+        ax2.set_ylabel(None)
+        st.pyplot(fig2)
+        
+with tab2:
+    st.subheader("Pola Sewa Hari Kerja vs Libur")
+    st.caption(f"Analisis Harian {start_fmt} - {end_fmt}")
+
+    by_workingday = daily_df.groupby(by="is_workingday").agg({
+        "casual": "mean",
+        "registered": "mean"
+    }).reset_index()
+
+    by_workingday['is_workingday'] = by_workingday['is_workingday'].map({
+        0: 'Holiday/Weekend',
+        1: 'Working Day'
+    })
+
+    by_workingday_melt = by_workingday.melt(
+        id_vars="is_workingday",
+        var_name="user_type",
+        value_name="avg_count"
+    )
+
+    fig_work_holiday, ax_work_holiday = plt.subplots(figsize=(10, 5))
+    sns.barplot(
+        x="is_workingday", 
+        y="avg_count", 
+        hue="user_type", 
+        data=by_workingday_melt, 
+        palette="viridis",
+        ax=ax_work_holiday
+    )
+
+    ax_work_holiday.set_title("Perbandingan Rata-rata Penyewaan: Hari Kerja vs Libur", fontsize=16)
+    ax_work_holiday.set_xlabel(None)
+    ax_work_holiday.set_ylabel(None)
+    ax_work_holiday.legend(title="Tipe Pengguna")
+    st.pyplot(fig_work_holiday)
     
-st.subheader("Pola Sewa Hari Kerja vs Libur")
-st.caption(f"Analisis Harian {start_fmt} - {end_fmt}")
-
-by_workingday = daily_df.groupby(by="is_workingday").agg({
-    "casual": "mean",
-    "registered": "mean"
-}).reset_index()
-
-by_workingday['is_workingday'] = by_workingday['is_workingday'].map({
-    0: 'Holiday/Weekend',
-    1: 'Working Day'
-})
-
-by_workingday_melt = by_workingday.melt(
-    id_vars="is_workingday",
-    var_name="user_type",
-    value_name="avg_count"
-)
-
-fig_work_holiday, ax_work_holiday = plt.subplots(figsize=(10, 5))
-sns.barplot(
-    x="is_workingday", 
-    y="avg_count", 
-    hue="user_type", 
-    data=by_workingday_melt, 
-    palette="viridis",
-    ax=ax_work_holiday
-)
-
-ax_work_holiday.set_title("Perbandingan Rata-rata Penyewaan: Casual vs Registered", fontsize=16)
-ax_work_holiday.set_xlabel(None)
-ax_work_holiday.set_ylabel("Rata-rata Penyewaan", fontsize=12)
-ax_work_holiday.legend(title="Tipe Pengguna")
-st.pyplot(fig_work_holiday)
+st.markdown("---")
     
 st.subheader("Analisis Lanjutan (Binning Suhu dan Waktu)")
 st.caption(f"Analisis Harian {start_fmt} - {end_fmt}")
