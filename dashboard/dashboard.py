@@ -54,7 +54,11 @@ with col3:
 
 st.markdown("---")
 
+start_fmt = start_date.strftime('%d %b %Y')
+end_fmt = end_date.strftime('%d %b %Y')
+
 st.subheader("Pengaruh Musim & Cuaca")
+st.caption(f"Analisis Harian {start_fmt} - {end_fmt}")
 
 daily_df = main_df.groupby('dteday').agg({
     'season': 'max',
@@ -83,7 +87,8 @@ with col_viz2:
     ax2.set_ylabel(None)
     st.pyplot(fig2)
     
-st.subheader("Pola penyewaan sepeda di hari kerja dan hari libur")
+st.subheader("Pola Sewa Hari Kerja vs Libur")
+st.caption(f"Analisis Harian {start_fmt} - {end_fmt}")
 
 by_workingday = daily_df.groupby(by="is_workingday").agg({
     "casual": "mean",
@@ -118,6 +123,7 @@ ax_work_holiday.legend(title="Tipe Pengguna")
 st.pyplot(fig_work_holiday)
     
 st.subheader("Analisis Lanjutan (Binning Suhu dan Waktu)")
+st.caption(f"Analisis Harian {start_fmt} - {end_fmt}")
 
 col_temp, col_time = st.columns(2)
 
