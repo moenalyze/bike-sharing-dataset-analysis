@@ -62,15 +62,18 @@ tab1, tab2 = st.tabs(["Pengaruh Musim & Cuaca", "Pola Sewa Hari Kerja vs Libur"]
 with tab1:
     st.subheader("Pengaruh Musim & Cuaca")
     st.caption(f"Analisis Harian {start_fmt} - {end_fmt}")
-
+    
     daily_df = main_df.groupby('dteday').agg({
-        'season': 'max',
-        'weather_cond': 'max',
-        'is_workingday': 'max',
+        'season': 'first',
+        'weather_daily': 'first',
+        'temp_category': 'first',
+        'is_workingday': 'first',
         'casual': 'sum',
         'registered': 'sum',
         'total_count': 'sum'
     }).reset_index()
+
+    daily_df.rename(columns={'weather_daily': 'weather_cond'}, inplace=True)
 
     col_viz1, col_viz2 = st.columns(2)
 
@@ -138,7 +141,7 @@ with col_temp:
     sns.barplot(
         x="temp_category", 
         y="total_count", 
-        data=main_df,
+        data=daily_df,
         order=['Cold', 'Mild', 'Hot'],
         palette="coolwarm",
         errorbar=None,
